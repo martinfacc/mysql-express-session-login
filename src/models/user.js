@@ -11,7 +11,11 @@ User.init({
 	firstname: DataTypes.STRING,
 	lastname: DataTypes.STRING,
 	email: DataTypes.STRING,
-	password: DataTypes.STRING
+	password: DataTypes.STRING,
+	state: {
+		type: DataTypes.STRING,
+		defaultValue: 'active'
+	}
 }, {
 	sequelize,
 	modelName: 'User'

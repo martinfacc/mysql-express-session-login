@@ -5,6 +5,8 @@ import { sequelize } from './db.js'
 
 import express from 'express'
 import cors from 'cors'
+import session from 'express-session'
+import { sessionStore } from './session.js'
 import logger from './logger.js'
 import notFound from './middlewares/notFound.js'
 import errorHandler from './middlewares/errorHandler.js'
@@ -16,7 +18,13 @@ const app = express()
 app.use(express.json())
 app.use(cors())
 app.use(logger)
-
+app.use(session({
+	key: 'session_cookie_name',
+	secret: 'session_cookie_secret',
+	store: sessionStore,
+	resave: false,
+	saveUninitialized: false
+}))
 app.use('/api/user', userRouter)
 app.use(notFound)
 app.use(errorHandler)

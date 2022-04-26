@@ -1,34 +1,15 @@
-import Session from '../models/session.js'
-import jwt from 'jsonwebtoken'
+import User from '../models/user.js'
 
-const { JWT_SECRET } = process.env
-
-const authenticateSession = async (SessionId, UserId) => {
+export const sessionExtractor = async (request, response, next) => {
 	try {
-		const session = await Session.findOne({
-			where: { id: SessionId, UserId }
-		})
-		if (!session) throw new Error()
-		return true
-	} catch {
-		return false
-	}
-}
-
-const sessionExtractor = async (request, response, next) => {
-	try {
-		const unauthorizedError = new Error('Unauthorized')
-		const header = request.get('authorization')
-		if (!header || !header.startsWith('Bearer')) throw unauthorizedError
-		const token = header.slice(7)
-		const { SessionId, UserId } = jwt.verify(token, JWT_SECRET)
-		if (!token || !SessionId || !UserId) throw unauthorizedError
-		const isValid = await authenticateSession(SessionId, UserId)
-		if (!isValid) throw unauthorizedError
+		const userId = request?.session?.userId
+		if (!userId) throw new Error('User not found')
+		const user = await User.findByPk(userId)
+		if (!user || user.state !== 'active') throw new Error('The user is not active')
+		request.user = user
 		next()
 	} catch (error) {
+		delete request.session.userId
 		next(error)
 	}
 }
-
-export default sessionExtractor
